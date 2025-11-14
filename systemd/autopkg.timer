@@ -1,0 +1,11 @@
+[Unit]
+Description=Run autopkg package updater daily
+Documentation=https://github.com/tvanderpool/autopkg-g
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=3600
+
+[Install]
+WantedBy=timers.target

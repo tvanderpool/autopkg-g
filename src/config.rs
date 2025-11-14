@@ -1,4 +1,4 @@
-use serde::de::{Deserializer};
+use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
 
 /// Top-level configuration file structure.

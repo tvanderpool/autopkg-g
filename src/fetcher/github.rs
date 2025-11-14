@@ -47,8 +47,8 @@ impl GitHubFetcher {
 
         let pattern_str = config.file_pattern.as_deref().unwrap_or("*");
 
-        let file_pattern =
-            Pattern::new(pattern_str).with_context(|| format!("Invalid glob pattern: {}", pattern_str))?;
+        let file_pattern = Pattern::new(pattern_str)
+            .with_context(|| format!("Invalid glob pattern: {}", pattern_str))?;
 
         let client = Client::builder()
             .user_agent("autopkg-rust/0.1")

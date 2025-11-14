@@ -73,11 +73,7 @@ impl DebInstaller {
         let mut args: Vec<String> = cmd.1.iter().map(|s| s.to_string()).collect();
         args.push(file_path.display().to_string());
 
-        info!(
-            "Running install command: {} {}",
-            cmd.0,
-            args.join(" ")
-        );
+        info!("Running install command: {} {}", cmd.0, args.join(" "));
 
         let status = Command::new(cmd.0)
             .args(&args)

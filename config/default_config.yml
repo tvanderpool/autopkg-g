@@ -1,0 +1,25 @@
+# autopkg default configuration
+# Edit this file to define applications to manage
+
+applications:
+  # Example application configuration
+  # Uncomment and modify to add applications
+  
+  # - name: obsidian
+  #   fetcher:
+  #     type: github
+  #     repo: obsidianmd/obsidian-releases
+  #     file_pattern: "*.deb"
+  #   installer: deb
+  
+  # - name: example-app
+  #   fetcher:
+  #     type: github
+  #     repo: owner/repo
+  #     file_pattern: "*amd64.deb"
+  #   installer:
+  #     type: deb
+  #   # Optional: override package name
+  #   # package_name: example-app
+  #   # Optional: pin to prevent updates
+  #   # pinned: false
