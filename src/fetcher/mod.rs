@@ -12,4 +12,9 @@ pub trait Fetcher {
 }
 
 /// Factory for fetchers.
-pub fn create_fetcher(config: &FetcherConfig, app: &ApplicationConfig) -> Result<Box<dyn Fetcher>>
+pub fn create_fetcher(config: &FetcherConfig, app: &ApplicationConfig) -> Result<Box<dyn Fetcher>> {
+    match config.r#type.as_str() {
+        "github" => Ok(Box::new(github::GitHubFetcher::new(config, app)?)),
+        other => Err(anyhow!("Unknown fetcher type: {}", other)),
+    }
+}
