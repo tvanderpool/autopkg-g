@@ -1,0 +1,15 @@
+applications:
+  - name: obsidian
+    fetcher:
+      type: github
+      repo: obsidianmd/obsidian-releases
+      file_pattern: "*.deb"
+    installer:
+      type: deb
+
+  - name: some-app
+    fetcher:
+      type: github
+      repo: owner/repo
+      file_pattern: "*amd64.deb"
+    installer: deb  # shorthand format
