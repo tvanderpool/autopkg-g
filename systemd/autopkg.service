@@ -1,0 +1,14 @@
+[Unit]
+Description=autopkg - Automatic package updater
+Documentation=https://github.com/tvanderpool/autopkg-g
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/autopkg run --config /etc/autopkg/config.yml
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

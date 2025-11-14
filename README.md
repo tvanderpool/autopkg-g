@@ -56,7 +56,66 @@ The resulting binary will be at:
 target/release/autopkg
 ```
 
-You can either run it from there, or install it somewhere in your `PATH`.
+### Install using self-install
+
+The easiest way to install `autopkg` is using the built-in `self-install` subcommand. This will:
+
+- Copy the binary to `/usr/local/bin/autopkg`
+- Create a default config file at `/etc/autopkg/config.yml`
+- Install systemd service and timer units
+- Enable and start the timer for automatic daily updates
+
+To use it, build the binary first, then run:
+
+```bash
+# Build the binary
+cargo build --release
+
+# Run self-install (requires root/sudo)
+sudo ./target/release/autopkg self-install
+```
+
+**Options:**
+
+- `--install-dir <PATH>` - Change binary installation directory (default: `/usr/local/bin`)
+- `--config-path <PATH>` - Change config file location (default: `/etc/autopkg/config.yml`)
+
+**Example with custom paths:**
+
+```bash
+sudo ./target/release/autopkg self-install \
+  --install-dir /opt/bin \
+  --config-path /opt/autopkg/config.yml
+```
+
+**What it installs:**
+
+- **Binary:** `/usr/local/bin/autopkg` (or your custom path)
+- **Config:** `/etc/autopkg/config.yml` (or your custom path)
+- **systemd service:** `/etc/systemd/system/autopkg.service`
+- **systemd timer:** `/etc/systemd/system/autopkg.timer`
+
+**Behavior:**
+
+- Never overwrites existing files (binary, config, or systemd units)
+- Fails with clear error messages if permissions are insufficient
+- Automatically enables and starts the timer unit
+
+After installation, you can:
+
+```bash
+# Check timer status
+systemctl status autopkg.timer
+
+# View timer schedule
+systemctl list-timers autopkg.timer
+
+# Run manually
+autopkg run
+
+# Edit config
+sudo nano /etc/autopkg/config.yml
+```
 
 ---
 
@@ -88,6 +147,7 @@ Options:
 Commands:
   run          Run update checks (and installs, unless --dry-run)
   show-config  Show the parsed configuration
+  self-install Install autopkg binary, config, and systemd units
   help         Print this message or the help of the given subcommand(s)
 ```
 
@@ -127,6 +187,32 @@ autopkg show-config --config /etc/autopkg.yml
 ```
 
 This will log that the configuration was parsed and print the YAML representation to `stdout`.
+
+### `self-install` subcommand
+
+Install autopkg on your system with systemd integration:
+
+```bash
+sudo autopkg self-install
+```
+
+This subcommand:
+1. Copies the autopkg binary to `/usr/local/bin/autopkg`
+2. Creates a default config file at `/etc/autopkg/config.yml` (if it doesn't exist)
+3. Installs systemd service and timer units to `/etc/systemd/system/`
+4. Reloads systemd and enables the timer unit
+
+**Options:**
+- `--install-dir <PATH>` – Binary install directory (default: `/usr/local/bin`)
+- `--config-path <PATH>` – Config file path (default: `/etc/autopkg/config.yml`)
+
+**Important notes:**
+- Requires root/sudo permissions
+- Never overwrites existing files
+- If a file already exists, it will be skipped and left unchanged
+- The timer runs daily (with a randomized delay up to 1 hour)
+
+See the Installation section above for more details.
 
 ---
 
@@ -382,6 +468,58 @@ The architecture is intentionally modular:
 - Version comparison is minimal and may not handle complex tagging schemes.
 - GitHub API calls are currently unauthenticated; heavy usage may run into rate limits.
   - In future, a `GITHUB_TOKEN` environment variable or config option can be added.
+
+---
+
+## systemd Integration
+
+When using `autopkg self-install`, the following systemd units are installed:
+
+### autopkg.service
+
+The service unit defines how autopkg runs:
+- Runs as a oneshot service (exits after completion)
+- Executes: `/usr/local/bin/autopkg run --config /etc/autopkg/config.yml`
+- Waits for network connectivity before starting
+- Logs output to systemd journal
+
+### autopkg.timer
+
+The timer unit schedules automatic runs:
+- Runs daily (using `OnCalendar=daily`)
+- Includes a randomized delay of up to 1 hour to avoid load spikes
+- Persists across reboots (catches missed runs)
+
+### Managing the timer
+
+```bash
+# Check timer status
+systemctl status autopkg.timer
+
+# View next scheduled run
+systemctl list-timers autopkg.timer
+
+# View service logs
+journalctl -u autopkg.service
+
+# Stop the timer
+sudo systemctl stop autopkg.timer
+
+# Disable automatic runs
+sudo systemctl disable autopkg.timer
+
+# Re-enable
+sudo systemctl enable --now autopkg.timer
+
+# Trigger a manual run via systemd
+sudo systemctl start autopkg.service
+```
+
+**Note:** If you change the systemd unit files manually, reload systemd:
+
+```bash
+sudo systemctl daemon-reload
+```
 
 ---
 
