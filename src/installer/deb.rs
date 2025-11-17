@@ -1,5 +1,5 @@
 use crate::config::ApplicationConfig;
-use crate::installer::Installer;
+use crate::installer::{Installer, run_as_root};
 use crate::types::UpdateCheck;
 
 use anyhow::{anyhow, Context, Result};
@@ -63,23 +63,12 @@ impl DebInstaller {
     }
 
     fn run_install_command(&self, file_path: &Path) -> Result<()> {
-        // Prefer sudo dpkg -i <file>
-        let cmd = if which("sudo").is_ok() {
-            ("sudo", vec!["dpkg", "-i"])
-        } else {
-            ("dpkg", vec!["-i"])
-        };
+        let file_path_str = file_path.display().to_string();
 
-        let mut args: Vec<String> = cmd.1.iter().map(|s| s.to_string()).collect();
-        args.push(file_path.display().to_string());
+        info!("Running install command: dpkg -i {}", file_path_str);
 
-        info!("Running install command: {} {}", cmd.0, args.join(" "));
-
-        let status = Command::new(cmd.0)
-            .args(&args)
-            .status()
-            .with_context(|| "Failed to run installer command")?;
-
+        let status = run_as_root(&["dpkg", "-i", &file_path_str], ||"installing deb package")?;
+        
         if !status.success() {
             return Err(anyhow!("Installer command failed with status {}", status));
         }
