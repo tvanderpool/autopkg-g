@@ -40,7 +40,7 @@
 			"p10kConfig": "https://gist.githubusercontent.com/tvanderpool/1bb83bc4fcb9e47190f8dd3ad3c001fa/raw/506c9ddf27bbdd8efd41558e710e9f88fa8e3c1a/my-p10k.zsh"
 		},
 		"ghcr.io/devcontainers-extra/features/apt-packages": {
-			"packages": "cmake"
+			"packages": "cmake musl-tools"
 			// "packages": "curl, git, lldb, lld, build-essential, libssl-dev, pkg-config, libclang-dev, clang, cmake, gdb, gdbserver, vim, zsh, fzf, htop, unzip, wget"
 		}
 	},
@@ -54,6 +54,7 @@
 		// "claude": "npm install -g @anthropic-ai/claude-code",
 		// "apt": "sudo apt-get update && sudo apt-get install -y cmake",
 		"cargo-owner": "sudo chown -R 1000:1000 /usr/local/cargo",
+		"rust-target": "rustup target add x86_64-unknown-linux-musl",
 		"omz": "${containerWorkspaceFolder}/.devcontainer/shell-setup.sh"
 	},
     // "postCreateCommand": "rustc --version",
