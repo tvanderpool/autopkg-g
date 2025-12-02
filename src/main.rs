@@ -100,22 +100,38 @@ fn load_config(config: Option<PathBuf>) -> Result<(Config, PathBuf)> {
     Ok((config, config_path))
 }
 
+fn save_config(config: &Config, config_path: &Path) -> Result<()> {
+    let config_yaml = serde_yaml::to_string(config)
+        .with_context(|| "Failed to serialize config to YAML")?;
+    fs::write(config_path, config_yaml)
+        .with_context(|| format!("Failed to write config file to {}", config_path.display()))?;
+    info!("Config file updated: {}", config_path.display());
+    Ok(())
+}
+
 fn run_command(config: Option<PathBuf>, dry_run: bool) -> Result<()> {
-    let (config, _) = load_config(config)?;
+    let (mut config, config_path) = load_config(config)?;
     info!(
         "Loaded {} application(s) from config",
         config.applications.len()
     );
 
-    for app in &config.applications {
+    let mut config_updated = false;
+
+    for app in &mut config.applications {
         info!("Processing application: {}", app.name);
 
-        if let Err(e) = process_application(app, dry_run) {
+        if let Err(e) = process_application(app, dry_run, &mut config_updated) {
             error!(
                 "Application '{}' failed: {:?}. Continuing with others.",
                 app.name, e
             );
         }
+    }
+
+    // Save config if any application updated it
+    if config_updated {
+        save_config(&config, &config_path)?;
     }
 
     Ok(())
@@ -136,7 +152,11 @@ fn show_config_command(config: Option<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-fn process_application(app: &config::ApplicationConfig, dry_run: bool) -> Result<()> {
+fn process_application(
+    app: &mut config::ApplicationConfig,
+    dry_run: bool,
+    config_updated: &mut bool,
+) -> Result<()> {
     let installer = create_installer(&app.installer, app)?;
     let fetcher = create_fetcher(&app.fetcher, app)?;
 
@@ -169,6 +189,16 @@ fn process_application(app: &config::ApplicationConfig, dry_run: bool) -> Result
                         );
                         installer.install(&downloaded_path)?;
                         info!("{}: installation completed", app.name);
+
+                        // Update package_name in config if it was not set and this is a deb installer
+                        if app.installer.r#type == "deb" && app.package_name.is_none() {
+                            info!(
+                                "{}: updating config to set package_name = {}",
+                                app.name, app.name
+                            );
+                            app.package_name = Some(app.name.clone());
+                            *config_updated = true;
+                        }
                     }
                 }
             }
