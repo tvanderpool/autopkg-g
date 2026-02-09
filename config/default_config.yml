@@ -9,8 +9,15 @@ applications:
   #   fetcher:
   #     type: github
   #     repo: obsidianmd/obsidian-releases
-  #     file_pattern: "*.deb"
+  #     file_pattern: "*_amd64.deb"
   #   installer: deb
+  # - name: claude-desktop
+  #   fetcher:
+  #     type: github
+  #     repo: aaddrick/claude-desktop-debian
+  #     file_pattern: "*_amd64.deb"
+  #   installer:
+  #     type: deb
   
   # - name: example-app
   #   fetcher:
