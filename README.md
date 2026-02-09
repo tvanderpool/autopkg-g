@@ -33,6 +33,24 @@ The design aims to make it easy to add more fetchers (e.g., other APIs) and inst
 
 ## Installation
 
+### Download pre-built release
+
+Pre-built binaries are available on the [Releases](https://github.com/tvanderpool/autopkg-g/releases) page. Download the latest release for your platform:
+
+```bash
+# Download the latest release (example for v0.1.0)
+curl -L -o autopkg.tar.gz https://github.com/tvanderpool/autopkg-g/releases/download/v0.1.0/autopkg-v0.1.0-x86_64-unknown-linux-musl.tar.gz
+
+# Verify the checksum (optional but recommended)
+curl -L -o autopkg.tar.gz.sha256 https://github.com/tvanderpool/autopkg-g/releases/download/v0.1.0/autopkg-v0.1.0-x86_64-unknown-linux-musl.tar.gz.sha256
+sha256sum -c autopkg.tar.gz.sha256
+
+# Extract and install
+tar -xzf autopkg.tar.gz
+sudo mv autopkg /usr/local/bin/
+sudo chmod +x /usr/local/bin/autopkg
+```
+
 ### Prerequisites
 
 - Rust toolchain (1.70+ recommended): [Install Rust](https://www.rust-lang.org/tools/install)
@@ -548,6 +566,24 @@ Lint (if you’ve added `clippy`):
 ```bash
 cargo clippy --all-targets --all-features
 ```
+
+### Creating a Release
+
+Releases are automated via GitHub Actions. To create a new release:
+
+1. Update the version in `Cargo.toml`
+2. Commit the version change
+3. Create and push a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The GitHub Actions workflow will automatically:
+- Build the binary with musl target for maximum compatibility
+- Create a GitHub release with auto-generated release notes
+- Upload the binary tarball with SHA256 checksum
 
 ---
 
